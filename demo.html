@@ -17,7 +17,7 @@ $(function () {
         $('#html-content').val(content);
         flushDocument('#html-content', '#html-preview');
     };
-    var democase = location.search.replace(/^\?/, '').match(/case=[^&]/);
+    var democase = location.search.replace(/^\?/, '').match(/case=[^&]*/);
     if (democase) {
         democase = democase[0];
         democase = democase.substr(democase.indexOf('=') + 1);
@@ -27,7 +27,6 @@ $(function () {
             $.ajax({
                 method: 'get',
                 url: '/democases/' + democase + '.html',
-                dataType: 'text/plain',
                 success: function (data) {
                     initInput(data);
                 },
