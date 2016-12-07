@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>NeetJS Preview</title>
+<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.neet.js"></script>
+<script type="text/javascript">
+var flushDocument = function (input, iframe) {
+    $('iframe').each(function () {
+        $(this.contentDocument).find('html').empty();
+        $(this.contentDocument).find('html').html($(input).val());
+    });
+};
+$(function () {
+    var initInput = function (content) {
+        content = content === undefined ? '<html>\n<head>\n    <title>Hello</title>\n</head>\n<body>\n    Hello World!\n</body>\n</html>\n' : content;
+        $('#html-content').val(content);
+        flushDocument('#html-content', '#html-preview');
+    };
+    var case = location.search.replace(/^\?/, '').match(/case=[^&]/);
+    if (case) {
+        case = case[0];
+        case = case.substr(case.indexOf('=') + 1);
+        if (!case) {
+            initInput();
+        } else {
+            $.ajax({
+                method: 'get',
+                url: '/demo/cases/' + case + '.html',
+                dataType: 'text/plain',
+                success: function (data) {
+                    initInput(data);
+                },
+                error: function () {
+                    initInput();
+                }
+            });
+        }
+    } else {
+        initInput();
+    }
+});
+</script>
+</head>
+<body style="min-width: 1200px; margin: 0px auto;">
+<form action="javascript:flushDocument('#html-content', '#html-preview')">
+    <table style="width: 100%;">
+        <thead>
+            <tr><th colspan="2"><h1>NeetJS Code Preview</h1></th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="width: 50%"><button type="submit">Submit Code</button><br/></td>
+                <td style="width: 50%">&nbsp;</td>
+            </tr>
+            <tr>
+                <td><textarea id="html-content" style="width: 99%; height: 600px;"></textarea></td>
+                <td><iframe id="html-preview" style="width: 99%; height: 600px;"></iframe></td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr><th colspan="2">&copy; NeetJS.org 2016-2017. All rights reserved.</th></tr>
+        </tfoot>
+    </table>
+</form>
+</body>
+</html>
