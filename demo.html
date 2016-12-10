@@ -2,12 +2,15 @@
 <html>
 <head>
 <title>NeetJS Preview</title>
-<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="https://neetjs.github.io/res/jquery.min.js"></script>
 <script type="text/javascript">
 var flushDocument = function (input, iframe) {
     $('iframe').each(function () {
-        $(this.contentDocument).find('html').empty();
-        $(this.contentDocument).find('html').html($(input).val());
+        this.contentDocument.open();
+        this.contentDocument.write($(input).val());
+        this.contentDocument.close();
+        // $(this.contentDocument).empty();
+        // this.contentDocument = $(input).val();
     });
 };
 $(function () {
