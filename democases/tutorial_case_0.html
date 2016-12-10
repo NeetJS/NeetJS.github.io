@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.neet.js"></script>
+<script type="text/javascript">
+$(function () {
+    $.neetjs.loadFromBody();
+    $('body').ntInject({
+        'class': 'org-neetjs-demo-hello',
+        'data': {
+            'title': 'Mr.',
+            'name': 'Chen'
+        }
+    });
+});
+</script>
+<title>Hello NeetJS</title>
+</head>
+<body>
+
+<div nt-class="org-neetjs-demo-hello">
+<div nt-body>
+    <h1>Hello NeetJS!</h1>
+    <p>Welcome to use NeetJS tutorial, <span nt-html="title"></span> <span nt-html="name"></span></p>
+</div>
+</div>
+
+</body>
+</html>
