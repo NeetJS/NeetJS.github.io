@@ -70,7 +70,7 @@
             return;
         }
         if (_loaders_name[name] !== undefined) {
-            log.warn('redundant class loader added named ' + name + ', override.');
+            log.warn('Redundant class loader added named ' + name + ', override.');
         }
         _loaders_idx.push(loader);
         _loaders_name[name] = loader;
@@ -97,22 +97,41 @@
         var spacejq = $(document.createElement('body'));
         spacejq.append(content);
         $(spacejq).find('[nt-class]').each(function () {
+            var classdef = this;
             var name = $(this).attr('nt-class');
             if (_classes[name] !== undefined) {
-                log.warn('redundant loadclass called for class ' + name + ', ignore.');
+                log.warn('Redundant loadclass called for class ' + name + ', ignore.');
                 return;
             }
-            $(this).removeAttr('nt-class');
-            $(this).find('[nt-head]').each(function () {
-                $(this).removeAttr('nt-head');
+            try {
+                var eprefix = 'Failed to load class \'' + name + '\', ';
+                if ($(this).find('[nt-head]').length > 1 || $(this).find('[nt-body]').length != 1) {
+                    throw eprefix + 'a class should have 0 or 1 nt-head and 1 nt-body.';
+                }
+                $(this).find('[nt-head]').each(function () {
+                    if (this.parentNode != classdef) {
+                        throw eprefix + 'nt-head should be the direct child of nt-class.';
+                    }
+                });
+                $(this).find('[nt-body]').each(function () {
+                    if (this.parentNode != classdef) {
+                        throw eprefix + 'nt-body should be the direct child of nt-class.';
+                    }
+                });
+            } catch (e) {
+                log.error(e);
+                return;
+            }
+            $(this).find('[nt-head]').children().each(function () {
                 var rid = $(this).attr('nt-resource-id');
                 if (rid && $('head [nt-resource-id=' + rid + ']').length > 0) {
                     $(this).appendTo();
+                    log.info('Redundant resource (rid:' + rid + ') detected, ignore.');
                     return;
                 }
                 $(this).appendTo('head');
             });
-            _classes[name] = this;
+            _classes[name] = $(this).find('[nt-body]').html();
         });
     };
 
@@ -346,6 +365,7 @@
             }
         });
         if (!_parent.find($this).length) {
+            // log.debug('node removed');
             return;
         }
         $($this).children().each(function () {
@@ -355,31 +375,30 @@
 
     var _ntrender = function (jq, opt, method) {
         jq.each(function () {
-            var newdom = $(_getClass(opt['class'])).clone()[0];
-            var $scope = opt['data'];
-            $(document.createElement('html')).append(newdom);
-            $(newdom).each(function () {
+            var $scope = opt['data'] === undefined ? {} : opt['data'];
+            var html = document.createElement('html');
+            var body = document.createElement('body');
+            $(html).append(body);
+            $(body).html(_getClass(opt['class']));
+            $(body).each(function () {
                 _render(_RCtx.getInitContext(this, $scope));
                 switch (method){
                     case 'ntReplace':
-                        jq.replaceWith(this);
+                        jq.replaceWith($(this).html());
                         break;
                     case 'ntInject':
                         jq.empty();
                     case 'ntPrepend':
-                        jq.prepend(this);
+                        jq.prepend($(this).html());
                         break;
                     case 'ntAppend':
-                        jq.append(this);
+                        jq.append($(this).html());
                         break;
                     case 'ntBefore':
-                        jq.before(this);
+                        jq.before($(this).html());
                         break;
                     case 'ntAfter':
-                        jq.after(this);
-                        break;
-                    default:
-                        throw 'Unexpected case.';
+                        jq.after($(this).html());
                         break;
                 }
             });
