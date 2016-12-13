@@ -9,8 +9,6 @@ var flushDocument = function (input, iframe) {
         this.contentDocument.open();
         this.contentDocument.write($(input).val());
         this.contentDocument.close();
-        // $(this.contentDocument).empty();
-        // this.contentDocument = $(input).val();
     });
 };
 $(function () {

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.neet.js"></script>
+<!-- Init process -->
+<script type="text/javascript">
+$(function () {
+    // Load classes
+    $.neetjs.loadFromBody();
+    $('.addBtn').click(function () {
+        // Call a render method
+        $('body').ntAppend({'class': 'org-neetjs-demo-hello'});
+    });
+});
+</script>
+<title>Hello NeetJS</title>
+</head>
+<body>
+
+<!-- Definitions of NeetJS classes -->
+<div nt-class="org-neetjs-demo-hello">
+<div nt-body>
+    <p>Hello NeetJS!</p>
+</div>
+</div>
+
+<!-- Original body contents -->
+<p><button class="addBtn">Add Some Content</button></p>
+
+</body>
+</html>

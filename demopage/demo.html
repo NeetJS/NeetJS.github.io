@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.neet.js"></script>
+<title>NeetJS Demo</title>
+<script type="text/javascript">
+$(function () {
+    $.neetjs.addClassLoader({
+        'name': 'myloader',
+        'loader': function (classname) {
+            $.neetjs.loadFromBody();
+        }
+    });
+    $('body').ntInject({'class': 'org-neetjs-demo-frame'});
+    demo_load_all();
+});
+</script>
+
+</head>
+<body>
+
+<!-- neetjs mods -->
+
+<div nt-class="org-neetjs-demo-tableinfo">
+<div nt-body>
+    <p nt-if="type == 'students'">Students:</p>
+    <p nt-elseif="type == 'staffs'">Staffs:</p>
+    <p nt-else>Students and staffs:</p>
+</div>
+</div>
+
+<div nt-class="org-neetjs-demo-studenttable">
+<div nt-body>
+    <table>
+        <thead>
+            <tr>
+                <th>Student ID</th><th>Name</th><th>Mobile</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr nt-if="!students || !students.length">
+                <td colspan="4">No students to be display</td>
+            </tr>
+            <tr nt-repeat="students as row">
+                <td nt-html="row.id"></td>
+                <td nt-html="row.name"></td>
+                <td nt-html="row.mobile"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+
+<div nt-class="org-neetjs-demo-stafftable">
+<div nt-body>
+    <table>
+        <thead>
+            <tr>
+                <th>Staff ID</th><th>Name</th><th>Office</th><th>Mobile</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr nt-if="!staffs || !staffs.length">
+                <td colspan="4">No staffs to be display</td>
+            </tr>
+            <tr nt-repeat="staffs as row">
+                <td nt-html="row.id"></td>
+                <td nt-html="row.name"></td>
+                <td nt-html="row.office"></td>
+                <td nt-html="row.mobile"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+
+<div nt-class="org-neetjs-demo-allpage">
+<div nt-body>
+    <div class="mainpanel left">
+        <span nt-eval="$scope.type = 'all'" nt-remove></span>
+        <div nt-replace="{'class': 'org-neetjs-demo-tableinfo', 'data': $scope}"></div>
+        <div nt-replace="{'class': 'org-neetjs-demo-studenttable', 'data': $scope}"></div>
+        <div nt-replace="{'class': 'org-neetjs-demo-stafftable', 'data': $scope}"></div>
+    </div>
+</div>
+</div>
+
+<div nt-class="org-neetjs-demo-studentpage">
+<div nt-body>
+    <div class="mainpanel left">
+        <div nt-replace="{'class': 'org-neetjs-demo-tableinfo', 'data': {'type': 'students'}}"></div>
+        <div nt-replace="{'class': 'org-neetjs-demo-studenttable', 'data': $scope}"></div>
+    </div>
+</div>
+</div>
+
+<div nt-class="org-neetjs-demo-staffpage">
+<div nt-head>
+    <link rel="stylesheet" type="text/css" href="demo.css" nt-resource-id="demo-css"/>
+    <script type="text/javascript" src="demo.js" nt-resource-id="demo-js"></script>
+</div>
+<div nt-body>
+    <div class="mainpanel left">
+        <div nt-replace="{'class': 'org-neetjs-demo-tableinfo', 'data': {'type': 'staffs'}}"></div>
+        <div nt-replace="{'class': 'org-neetjs-demo-stafftable', 'data': $scope}"></div>
+    </div>
+</div>
+</div>
+
+<div nt-class="org-neetjs-demo-frame">
+<div nt-head>
+    <link rel="stylesheet" type="text/css" href="demo.css" nt-resource-id="demo-css"/>
+    <script type="text/javascript" src="demo.js" nt-resource-id="demo-js"></script>
+</div>
+<div nt-body>
+    <div class="header">NeetJS Demo Web Page</div>
+    <div class="content">
+        <div class="sidemenu left">
+            <li><a href="javascript:demo_load_all()">all</a></li>
+            <li><a href="javascript:demo_load_student()">students</a></li>
+            <li><a href="javascript:demo_load_student('a')">class A</a></li>
+            <li><a href="javascript:demo_load_student('b')">class B</a></li>
+            <li><a href="javascript:demo_load_student('c')">class C</a></li>
+            <li><a href="javascript:demo_load_staff()">staffs</a></li>
+        </div>
+        <div class="mainpanel left"></div>
+        <div class="clear"></div>
+    </div>
+    <div class="footer">
+        <span>Copyright 2016 neetjs.org | Released Under MIT License</span>
+    </div>
+</div>
+</div>
+
+<!-- Real Body -->
+<p>The contents in body will be replaced due to the ntInject call</p>
+
+</body>
+</html>

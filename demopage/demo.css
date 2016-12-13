@@ -1,0 +1,47 @@
+body {
+    width: 1200px;
+    margin: 0px auto;
+}
+
+.left {
+    float: left;
+}
+
+.clear {
+    clear: both;
+}
+
+div.header {
+    border-bottom: 1px #000 solid;
+    padding: 1em 0px;
+    text-align: center;
+}
+
+div.footer {
+    border-top: 1px #000 solid;
+    padding: 1em 0px;
+    font-size: 0.8em;
+    text-align: center;
+}
+
+div.content {
+    margin: 1em 0px;
+}
+
+div.sidemenu {
+    width: 199px;
+}
+
+div.mainpanel {
+    width: 980px;
+    padding: 10px;
+    border-left: 1px #000 solid;
+}
+
+div.mainpanel table {
+    margin: 2em;
+}
+
+div.mainpanel table,td,th {
+    border: 1px #000 solid;
+}
