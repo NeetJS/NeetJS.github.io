@@ -1,14 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="X-UA-Compatible" content="IE=7,IE=9" />
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7,IE=EmulateIE9" />
+<meta http-equiv="X-UA-Compatible" content="IE=7,9" />
 <title>NeetJS Preview</title>
-<script type="text/javascript" src="https://neetjs.github.io/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.migrate.min.js"></script>
 <script type="text/javascript">
 var flushDocument = function (input, iframe) {
-    $('iframe').each(function () {
-        this.contentDocument.open();
-        this.contentDocument.write($(input).val());
-        this.contentDocument.close();
+    var reloaded = false;
+    $(iframe).each(function () {
+        var $frame = this;
+        var $f = this.contentWindow || this.contentDocument.document || this.contentDocument;;
+        $f.document.open();
+        $f.document.write($(input).val());
+        $f.document.close();
+        if ($.browser.msie) {
+            $($frame).load(function () {
+                if (!reloaded) {
+                    $frame.contentWindow.location.reload();
+                    reloaded = true;
+                }
+            });
+        }
     });
 };
 $(function () {
@@ -38,29 +55,30 @@ $(function () {
     } else {
         initInput();
     }
+    $('button[type=submit]').click(function () {
+        flushDocument('#html-content', '#html-preview');
+    });
 });
 </script>
 </head>
 <body style="min-width: 1200px; margin: 0px auto;">
-<form action="javascript:flushDocument('#html-content', '#html-preview')">
-    <table style="width: 100%;">
-        <thead>
-            <tr><th colspan="2"><h1>NeetJS Code Preview</h1></th></tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td style="width: 50%"><button type="submit">Submit Code</button><br/></td>
-                <td style="width: 50%">&nbsp;</td>
-            </tr>
-            <tr>
-                <td><textarea id="html-content" style="width: 99%; height: 600px;"></textarea></td>
-                <td><iframe id="html-preview" style="width: 99%; height: 600px;"></iframe></td>
-            </tr>
-        </tbody>
-        <tfoot>
-            <tr><th colspan="2">&copy; NeetJS.org 2016-2017. All rights reserved.</th></tr>
-        </tfoot>
-    </table>
-</form>
+<table style="width: 100%;">
+    <thead>
+        <tr><th colspan="2"><h1>NeetJS Code Preview</h1></th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="width: 50%"><button type="submit">Submit Code</button></td>
+            <td style="width: 50%">&nbsp;</td>
+        </tr>
+        <tr>
+            <td><textarea id="html-content" style="width: 99%; height: 600px;"></textarea></td>
+            <td><iframe id="html-preview" name="html-preview-frame" style="width: 99%; height: 600px;"></iframe></td>
+        </tr>
+    </tbody>
+    <tfoot>
+        <tr><th colspan="2">&copy; NeetJS.org 2016-2017. All rights reserved.</th></tr>
+    </tfoot>
+</table>
 </body>
 </html>
