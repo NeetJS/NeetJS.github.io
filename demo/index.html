@@ -29,29 +29,24 @@ var flushDocument = function (input, iframe) {
     });
 };
 $(function () {
+    var dcontent = '<html>\n<head>\n    <title>Hello</title>\n</head>\n<body>\n    Hello World!\n</body>\n</html>\n';
     var initInput = function (content) {
-        content = content === undefined ? '<html>\n<head>\n    <title>Hello</title>\n</head>\n<body>\n    Hello World!\n</body>\n</html>\n' : content;
+        content = content === undefined ? dcontent : content;
         $('#html-content').val(content);
         flushDocument('#html-content', '#html-preview');
     };
-    var democase = location.search.replace(/^\?/, '').match(/case=[^&]*/);
+    var democase = location.hash.replace(/^#/, '');
     if (democase) {
-        democase = democase[0];
-        democase = democase.substr(democase.indexOf('=') + 1);
-        if (!democase) {
-            initInput();
-        } else {
-            $.ajax({
-                method: 'get',
-                url: '/democases/' + democase + '.html',
-                success: function (data) {
-                    initInput(data);
-                },
-                error: function () {
-                    initInput();
-                }
-            });
-        }
+        $.ajax({
+            method: 'get',
+            url: '/demo/cases/' + democase + '.html',
+            success: function (data) {
+                initInput(data);
+            },
+            error: function () {
+                initInput();
+            }
+        });
     } else {
         initInput();
     }
