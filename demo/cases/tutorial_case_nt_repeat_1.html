@@ -10,10 +10,10 @@ $(function () {
     $('body').ntInject({
         'class': 'org-neetjs-demo-hello',
         'data': {
-            'staffs': [
-                {'name': 'Staff A', 'tel': '11111111'},
-                {'name': 'Staff B', 'tel': '11112222'}
-            ]
+            'staffs': {
+                'ST10001': {'name': 'Staff A', 'tel': '11111111'},
+                'ST10002': {'name': 'Staff B', 'tel': '11112222'}
+            }
         }
     });
 });
@@ -29,7 +29,7 @@ table,th,td {border: 1px solid #000;}
 <div nt-body>
     <table>
         <thead>
-            <tr><th>Seq.</th><th>Name</th><th>Tel.</th></tr>
+            <tr><th>Key</th><th>Name</th><th>Tel.</th></tr>
         </thead>
         <tbody>
             <tr nt-repeat="staffs as idx : row">
