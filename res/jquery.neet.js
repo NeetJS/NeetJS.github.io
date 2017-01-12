@@ -205,7 +205,7 @@
     var loadFromBody = function () {
         $('body [nt-class]').each(function () {
             loadFromContent(this);
-            $(this).replaceWith();
+            $(this).remove();
         });
     };
 
@@ -303,7 +303,7 @@
                     $(this).removeAttr('nt-if');
                 } else {
                     $context.getParent().updateIf(false);
-                    $(this).replaceWith();
+                    $(this).remove();
                     return;
                 }
             } else if ($(this).attr('nt-elseif') !== undefined) {
@@ -312,14 +312,14 @@
                     return;
                 }
                 if ($context.getParent().getIfresult()) {
-                    $(this).replaceWith();
+                    $(this).remove();
                     return;
                 } else if (eval($(this).attr('nt-elseif'))) {
                     $context.getParent().updateIf(true);
                     $(this).removeAttr('nt-elseif');
                 } else {
                     $context.getParent().updateIf(false);
-                    $(this).replaceWith();
+                    $(this).remove();
                     return;
                 }
             } else if ($(this).attr('nt-else') !== undefined) {
@@ -328,7 +328,7 @@
                     return;
                 }
                 if ($context.getParent().getIfresult()) {
-                    $(this).replaceWith();
+                    $(this).remove();
                     return;
                 } else {
                     $context.getParent().updateIf(true);
@@ -373,7 +373,7 @@
                         _for(this, _key);
                     }
                 }
-                $(this).replaceWith();
+                $(this).remove();
                 return;
             }
             //nt-replace
@@ -425,11 +425,10 @@
             }
             //nt-remove
             if ($(this).attr('nt-remove') !== undefined) {
-                $(this).replaceWith();
+                $(this).remove();
             }
         });
         if (!_parent.find($this).length) {
-            // log.debug('node removed');
             return;
         }
         // before rendering children, replace class members
@@ -474,22 +473,22 @@
                 _render(_RCtx.getInitContext(this, descq, $scope));
                 switch (method){
                     case 'ntReplace':
-                        jq.replaceWith($(this).html());
+                        jq.replaceWith($(this).children());
                         break;
                     case 'ntInject':
-                        jq.html($(this).html());
+                        jq.html($(this).children());
                         break;
                     case 'ntPrepend':
-                        jq.prepend($(this).html());
+                        jq.prepend($(this).children());
                         break;
                     case 'ntAppend':
-                        jq.append($(this).html());
+                        jq.append($(this).children());
                         break;
                     case 'ntBefore':
-                        jq.before($(this).html());
+                        jq.before($(this).children());
                         break;
                     case 'ntAfter':
-                        jq.after($(this).html());
+                        jq.after($(this).children());
                         break;
                 }
             });
