@@ -76,15 +76,57 @@
         _loaders_name[name] = loader;
     };
 
+    var _CDesc = function () {
+        var classname, content, parent_cname, members = [];
+        this.getClassName = function () {
+            return classname;
+        };
+        this.setClassName = function (_classname) {
+            classname = _classname;
+        };
+        this.getContent = function () {
+            return content;
+        };
+        this.setContent = function (_content) {
+            content = _content;
+        };
+        this.getParentClassName = function () {
+            return parent_cname;
+        };
+        this.setParentClassName = function (_parent_classname) {
+            parent_cname = _parent_classname;
+        };
+        this.getMember = function (_member_name) {
+            return members[_member_name];
+        };
+        this.setMember = function (_member_name, _member_content) {
+            members[_member_name] = _member_content;
+        };
+        this.getMembers = function () {
+            return members;
+        };
+        this.setMembers = function (_members) {
+            members = _members;
+        };
+        this.getClone = function () {
+            var clone = new _CDesc();
+            clone.setClassName(this.getClassName());
+            clone.setContent(this.getContent());
+            clone.setParentClassName(this.getParentClassName());
+            clone.setMembers(this.getMembers());
+            return clone;
+        };
+    }
+
     var _getClass = function (classname) {
         if (_classes[classname] !== undefined) {
-            return _classes[classname];
+            return _classes[classname].getClone();
         }
         for (var idx in _loaders_idx) {
             var loader = _loaders_idx[idx];
             loader(classname);
             if (_classes[classname] !== undefined) {
-                return _classes[classname];
+                return _classes[classname].getClone();
             }
         }
         throw 'Cannot load class \'' + classname + '\'.';
@@ -105,12 +147,17 @@
             }
             try {
                 var eprefix = 'Failed to load class \'' + name + '\', ';
-                if ($(this).find('[nt-head]').length > 1 || $(this).find('[nt-body]').length != 1) {
-                    throw eprefix + 'a class should have 0 or 1 nt-head and 1 nt-body.';
+                if ($(this).find('[nt-head]').length > 1 || $(this).find('[nt-body]').length > 1) {
+                    throw eprefix + 'a class should have 0 or 1 nt-head and 0 or 1 nt-body.';
                 }
                 $(this).find('[nt-head]').each(function () {
                     if (this.parentNode != classdef) {
                         throw eprefix + 'nt-head should be the direct child of nt-class.';
+                    }
+                });
+                $(this).find('[nt-override]').each(function () {
+                    if (this.parentNode != classdef) {
+                        throw eprefix + 'nt-override should be the direct child of nt-class.';
                     }
                 });
                 $(this).find('[nt-body]').each(function () {
@@ -122,6 +169,11 @@
                 log.error(e);
                 return;
             }
+            var cDesc = new _CDesc();
+            cDesc.setClassName(name);
+            if ($(this).attr('nt-extends') !== undefined) {
+                cDesc.setParentClassName($(this).attr('nt-extends'));
+            }
             $(this).find('[nt-head]').children().each(function () {
                 var rid = $(this).attr('nt-resource-id');
                 if (rid && $('head [nt-resource-id=' + rid + ']').length > 0) {
@@ -131,7 +183,11 @@
                 }
                 $(this).appendTo('head');
             });
-            _classes[name] = $(this).find('[nt-body]').html();
+            $(this).find('[nt-override]').each(function () {
+                cDesc.setMember($(this).attr('nt-override'), $(this).html());
+            });
+            cDesc.setContent($(this).find('[nt-body]').html());
+            _classes[name] = cDesc;
         });
     };
 
@@ -154,7 +210,7 @@
     };
 
     var _RCtx = function () {
-        var element, scope, parent, ifexists, ifresult;
+        var element, scope, parent, ifexists, ifresult, cdescarr;
         this.getElement = function () {
             return element;
         };
@@ -192,6 +248,12 @@
         this.endIf = function () {
             ifexists = false;
         };
+        this.getClassDescArray = function () {
+            return cdescarr;
+        };
+        this.setClassDescArray = function (_cdescarr) {
+            cdescarr = _cdescarr;
+        }
         this.createBrother = function (brotherElement) {
             var bean = new _RCtx();
             bean.setElement(brotherElement);
@@ -199,6 +261,7 @@
             bean.setParent(parent);
             bean.setIfexists(ifexists);
             bean.setIfresult(ifresult);
+            bean.setClassDescArray(cdescarr);
             return bean;
         };
         this.createChild = function (childElement) {
@@ -206,15 +269,17 @@
             bean.setElement(childElement);
             bean.setScope(scope);
             bean.setParent(this);
+            bean.setClassDescArray(cdescarr);
             return bean;
         };
     };
-    _RCtx.getInitContext = function (element, data) {
+    _RCtx.getInitContext = function (element, classDescArray, data) {
         var parent = new _RCtx();
         var bean = new _RCtx();
         bean.setElement(element);
         bean.setScope(data);
         bean.setParent(parent);
+        bean.setClassDescArray(classDescArray);
         return bean;
     };
 
@@ -222,7 +287,6 @@
     var _render = function ($context) {
         var $this = $context.getElement();
         var $scope = $context.getScope();
-        // make a copy
         if (!$.isPlainObject($scope)) {
             log.error('scope data should be plain object');
         }
@@ -368,6 +432,22 @@
             // log.debug('node removed');
             return;
         }
+        // before rendering children, replace class members
+        $($this).children().each(function () {
+            if ($(this).attr('nt-member') !== undefined) {
+                var _descArr = $context.getClassDescArray();
+                var _memberName = $(this).attr('nt-member');
+                $(this).removeAttr('nt-member');
+                for (var i in _descArr) {
+                    var member = _descArr[i].getMember(_memberName);
+                    if (member !== undefined) {
+                        $(this).replaceWith(member);
+                        break;
+                    }
+                }
+            }
+        });
+        // render children
         $($this).children().each(function () {
             _render($context.createChild(this));
         });
@@ -379,15 +459,26 @@
             var html = document.createElement('html');
             var body = document.createElement('body');
             $(html).append(body);
-            $(body).html(_getClass(opt['class']));
+            var descq = [];
+            var desc = _getClass(opt['class']);
+            do {
+                descq.push(desc);
+                if (desc.getParentClassName() !== undefined) {
+                    desc = _getClass(desc.getParentClassName());
+                } else {
+                    break;
+                }
+            } while (true);
+            $(body).html(desc.getContent());
             $(body).each(function () {
-                _render(_RCtx.getInitContext(this, $scope));
+                _render(_RCtx.getInitContext(this, descq, $scope));
                 switch (method){
                     case 'ntReplace':
                         jq.replaceWith($(this).html());
                         break;
                     case 'ntInject':
-                        jq.empty();
+                        jq.html($(this).html());
+                        break;
                     case 'ntPrepend':
                         jq.prepend($(this).html());
                         break;
