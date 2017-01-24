@@ -432,20 +432,25 @@
             return;
         }
         // before rendering children, replace class members
-        $($this).children().each(function () {
-            if ($(this).attr('nt-member') !== undefined) {
-                var _descArr = $context.getClassDescArray();
-                var _memberName = $(this).attr('nt-member');
-                $(this).removeAttr('nt-member');
-                for (var i in _descArr) {
-                    var member = _descArr[i].getMember(_memberName);
-                    if (member !== undefined) {
-                        $(this).replaceWith(member);
-                        break;
+        var _modified = false;
+        do {
+            _modified = false;
+            $($this).children().each(function () {
+                if ($(this).attr('nt-member') !== undefined) {
+                    _modified = true;
+                    var _descArr = $context.getClassDescArray();
+                    var _memberName = $(this).attr('nt-member');
+                    $(this).removeAttr('nt-member');
+                    for (var i in _descArr) {
+                        var member = _descArr[i].getMember(_memberName);
+                        if (member !== undefined) {
+                            $(this).replaceWith(member);
+                            break;
+                        }
                     }
                 }
-            }
-        });
+            });
+        } while (_modified);
         // render children
         $($this).children().each(function () {
             _render($context.createChild(this));
