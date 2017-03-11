@@ -50,6 +50,27 @@
         };
     })();
 
+    var _NtPropertyHelper = new (function () {
+        var map = undefined;
+        this.init = function () {
+            if (map !== undefined) {
+                return;
+            }
+            map = {};
+            $('head meta[nt-props]').each(function () {
+                var key = $(this).attr('nt-props');
+                var value = $(this).attr('content');
+                if (map[key] !== undefined) {
+                    log.warn('Redundant property \'' + key + '\' defined, using \'' + value + '\' overrides \'' + map[key] + '\'');
+                }
+                map[key] = value;
+            });
+        };
+        this.getProperty = function (name, default_value) {
+            return map[name] !== undefined ? map[name] : default_value;
+        };
+    })();
+
     var _NtClassDescriptor = function () {
         var classname, content, parent_cname, members = [];
         this.getClassName = function () {
@@ -97,18 +118,24 @@
         var _loaders_name = {};
         var _classes = {};
 
-        _NtClassDescriptor.getClassDescriptor = function (classname) {
+        _NtClassDescriptor.getClassDescriptor = function (classname, callback) {
             if (_classes[classname] !== undefined) {
-                return _classes[classname].getClone();
+                callback(_classes[classname].getClone());
+                return;
             }
-            for (var idx in _loaders_idx) {
-                var loader = _loaders_idx[idx];
-                loader(classname);
-                if (_classes[classname] !== undefined) {
-                    return _classes[classname].getClone();
-                }
-            }
-            throw 'Cannot load class \'' + classname + '\'.';
+            var chainedsearch = function (i) {
+                _loaders_idx[i](classname, function () {
+                    if (_classes[classname] !== undefined) {
+                        callback(_classes[classname].getClone());
+                    } else if (i + 1 >= _loaders_idx.length) {
+                        // no more loader avaliable
+                        throw 'Cannot load class \'' + classname + '\'.';
+                    } else {
+                        chainedsearch(i + 1);
+                    }
+                });
+            };
+            chainedsearch(0);
         };
 
         _NtClassDescriptor.addClassLoader = function (obj) {
@@ -273,7 +300,7 @@
     };
 
     (function () {
-        _getInitContext = function (element, classDescArray, data) {
+        var _getInitContext = function (element, classDescArray, data) {
             var parent = new _NtRenderContext();
             var bean = new _NtRenderContext();
             bean.setElement(element);
@@ -289,6 +316,8 @@
             var $scope = $context.getScope();
             if (!$.isPlainObject($scope)) {
                 log.error('scope data should be plain object');
+                log.error(JSON.stringify($scope, null, 2))
+                return;
             }
             // import scope variables
             for (var _key in $scope) {
@@ -467,49 +496,145 @@
                 var body = document.createElement('body');
                 $(html).append(body);
                 var descq = [];
-                var desc = _NtClassDescriptor.getClassDescriptor(opt['class']);
-                do {
-                    descq.push(desc);
-                    if (desc.getParentClassName() !== undefined) {
-                        desc = _NtClassDescriptor.getClassDescriptor(desc.getParentClassName());
-                    } else {
-                        break;
-                    }
-                } while (true);
-                $(body).html(desc.getContent());
-                $(body).each(function () {
-                    _render(_getInitContext(this, descq, $scope));
-                    switch (method){
-                        case 'ntReplace':
-                            jq.replaceWith($(this).children());
-                            break;
-                        case 'ntInject':
-                            jq.html($(this).children());
-                            break;
-                        case 'ntPrepend':
-                            jq.prepend($(this).children());
-                            break;
-                        case 'ntAppend':
-                            jq.append($(this).children());
-                            break;
-                        case 'ntBefore':
-                            jq.before($(this).children());
-                            break;
-                        case 'ntAfter':
-                            jq.after($(this).children());
-                            break;
-                    }
-                });
+                var onclassload = function (desc) {
+                    var first = descq[0];
+                    var last = descq[descq.length - 1];
+                    var classname = first.getClassName();
+                    $(body).html(desc.getContent());
+                    var mark0 = '<!-- nt-class \'' + classname + '\' begin -->';
+                    var mark1 = '<!-- nt-class \'' + classname + '\' end -->';
+                    $(body).each(function () {
+                        _render(_getInitContext(this, descq, $scope));
+                        switch (method){
+                            case 'ntReplace':
+                                jq.before(mark0);
+                                jq.after(mark1);
+                                jq.replaceWith($(this).children());
+                                break;
+                            case 'ntInject':
+                                jq.html($(this).children());
+                                jq.prepend(mark0);
+                                jq.append(mark1);
+                                break;
+                            case 'ntPrepend':
+                                jq.prepend(mark1);
+                                jq.prepend($(this).children());
+                                jq.prepend(mark0);
+                                break;
+                            case 'ntAppend':
+                                jq.append(mark0);
+                                jq.append($(this).children());
+                                jq.append(mark1);
+                                break;
+                            case 'ntBefore':
+                                jq.before(mark0);
+                                jq.before($(this).children());
+                                jq.before(mark1);
+                                break;
+                            case 'ntAfter':
+                                jq.after(mark1);
+                                jq.after($(this).children());
+                                jq.after(mark0);
+                                break;
+                        }
+                    });
+                };
+                var chainedparentload = function (classname) {
+                    _NtClassDescriptor.getClassDescriptor(classname, function (desc) {
+                        descq.push(desc);
+                        if (desc.getParentClassName() !== undefined) {
+                            chainedparentload(desc.getParentClassName());
+                        } else {
+                            onclassload(desc);
+                        }
+                    });
+                };
+                chainedparentload(opt['class']);
             });
         };
     })();
 
-    // mount to jQuery
+    // init processes
+    $(function () {
+
+        // init properties
+        (function () {
+            _NtPropertyHelper.init();
+        })();
+
+        // add default classloader
+        (function () {
+            var rxp = /^((?:[a-z](?:[a-z0-9\-]*[a-z])?)(?:\.(?:[a-z](?:[a-z0-9\-]*[a-z])?))*)\/([a-z](?:[a-z0-9\-]*[a-z])?)\/([a-z](?:[a-z0-9\-]*[a-z])?)$/;
+            _NtClassDescriptor.addClassLoader({
+                name: 'neetjs-default-classloader',
+                loader: function (classname, callback) {
+                    var gac = classname.match(rxp);
+                    if (!gac) {
+                        callback();
+                        return;
+                    }
+                    var group_id = gac[1];
+                    var artifact_id = gac[2];
+                    var class_id = gac[3];
+                    var path = '.';
+                    path = _NtPropertyHelper.getProperty('/repo', path);
+                    path = _NtPropertyHelper.getProperty('/repo/' + group_id, path);
+                    path = _NtPropertyHelper.getProperty('/repo/' + group_id + '/' + artifact_id, path);
+                    path += '/' + group_id + '/' + artifact_id + '.nt.html'
+                    $.ajax({
+                        method: 'get',
+                        url: path,
+                        success: function (data) {
+                            _NtClassDescriptor.loadFromContent(data);
+                            callback();
+                        },
+                        error: function() {
+                            callback();
+                        }
+                    });
+                }
+            });
+        })();
+
+        // load from body
+        (function () {
+            var autoload = _NtPropertyHelper.getProperty('/boot/load-from-body', 'false');
+            log.info('/boot/load-from-body setted to false');
+            if (autoload === 'true') {
+                _NtClassDescriptor.loadFromBody();
+            }
+        })();
+
+        // inject on load
+        (function () {
+            var autoinject = _NtPropertyHelper.getProperty('/boot/inject-on-load', 'false');
+            var injectclass = _NtPropertyHelper.getProperty('/boot/inject-on-load/class');
+            var injectdata = _NtPropertyHelper.getProperty('/boot/inject-on-load/data', "{}");
+            injectdata = eval('('+injectdata+')');
+            if (autoinject === 'false') {
+                log.info('/boot/inject-on-load setted to false');
+                return;
+            } else if (injectclass == undefined) {
+                log.warn('/boot/inject-on-load setted to true but no nt-class given, ignored');
+                return;
+            } else {
+                $('body').ntInject({
+                    'class': injectclass,
+                    'data': injectdata
+                });
+            }
+        })();
+
+    });
+
+    // NeetJS API Functions
+
+    // 1.0
     $.neetjs = {
-        addClassLoader:  _NtClassDescriptor.addClassLoader,
-        loadFromContent: _NtClassDescriptor.loadFromContent,
-        loadFromRemote:  _NtClassDescriptor.loadFromRemote,
-        loadFromBody:    _NtClassDescriptor.loadFromBody
+        loadFromBody: function () {
+            log.warn('$.neetjs.loadFromBody() was deprecated, use <meta nt-props="/boot/load-from-body" content="true" /> instead.');
+            _NtClassDescriptor.loadFromBody();
+        }
     };
 
     $.fn.ntReplace = function (option) {

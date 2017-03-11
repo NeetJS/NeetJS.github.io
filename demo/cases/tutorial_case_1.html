@@ -2,13 +2,13 @@
 <html>
 <head>
 <meta charset="utf-8" />
+<meta nt-props="/boot/load-from-body" content="true" />
 <script type="text/javascript" src="/res/jquery.min.js"></script>
 <script type="text/javascript" src="/res/jquery.neet.js"></script>
 <!-- Init process -->
 <script type="text/javascript">
 $(function () {
     // Load classes
-    $.neetjs.loadFromBody();
     $('.addBtn').click(function () {
         // Call a render method
         $('body').ntAppend({'class': 'org-neetjs-demo-hello'});
