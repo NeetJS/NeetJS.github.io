@@ -509,31 +509,31 @@
                             case 'ntReplace':
                                 jq.before(mark0);
                                 jq.after(mark1);
-                                jq.replaceWith($(this).children());
+                                jq.replaceWith($(this).contents());
                                 break;
                             case 'ntInject':
-                                jq.html($(this).children());
+                                jq.html($(this).contents());
                                 jq.prepend(mark0);
                                 jq.append(mark1);
                                 break;
                             case 'ntPrepend':
                                 jq.prepend(mark1);
-                                jq.prepend($(this).children());
+                                jq.prepend($(this).contents());
                                 jq.prepend(mark0);
                                 break;
                             case 'ntAppend':
                                 jq.append(mark0);
-                                jq.append($(this).children());
+                                jq.append($(this).contents());
                                 jq.append(mark1);
                                 break;
                             case 'ntBefore':
                                 jq.before(mark0);
-                                jq.before($(this).children());
+                                jq.before($(this).contents());
                                 jq.before(mark1);
                                 break;
                             case 'ntAfter':
                                 jq.after(mark1);
-                                jq.after($(this).children());
+                                jq.after($(this).contents());
                                 jq.after(mark0);
                                 break;
                         }

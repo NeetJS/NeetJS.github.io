@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta nt-props="/boot/load-from-body" content="true" />
+<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.neet.js"></script>
+<style type="text/css">
+.testPanel {border: 3px dashed #000; margin: 10px auto;}
+.renderDiv {background-color: #CCC;}
+</style>
+<title>Hello NeetJS</title>
+</head>
+<body>
+
+<div nt-class="hello-panel">
+<div nt-body>
+    <div class="testPanel">
+        Hello Panel!
+    </div>
+</div>
+</div>
+
+<div nt-class="hello-content">
+<div nt-body>
+    <p>Hello Content!</p>
+</div>
+</div>
+
+<button onclick="$('.renderDiv').ntPrepend({'class': 'hello-content'});">
+    $('.renderDiv').ntPrepend(...)
+</button>
+<br/>
+<button onclick="$('.renderDiv').ntAppend({'class': 'hello-content'});">
+    $('.renderDiv').ntAppend(...)
+</button>
+<br/>
+<button onclick="$('.renderDiv').ntBefore({'class': 'hello-panel'});">
+    $('.renderDiv').ntBefore(...)
+</button>
+<br/>
+<button onclick="$('.renderDiv').ntAfter({'class': 'hello-panel'});">
+    $('.renderDiv').ntAfter(...)
+</button>
+<br/>
+<button onclick="$('.renderDiv').ntInject({'class': 'hello-content'});">
+    $('.renderDiv').ntInject(...)
+</button>
+<br/>
+<button onclick="$('.renderDiv').ntReplace({'class': 'hello-panel'});">
+    $('.renderDiv').ntReplace(...)
+</button>
+<br/>
+
+<div class="testPanel renderDiv">
+    <p>This is renderDiv</p>
+</div>
+
+</body>
+</html>
