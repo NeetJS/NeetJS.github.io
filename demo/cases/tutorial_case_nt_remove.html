@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta nt-props="/boot/load-from-body" content="true" />
+<script type="text/javascript" src="/res/jquery.min.js"></script>
+<script type="text/javascript" src="/res/jquery.neet.js"></script>
+<script type="text/javascript">
+$(function () {
+    $('body').ntInject({'class': 'org-neetjs-demo-hello'});
+});
+</script>
+<title>Hello NeetJS</title>
+</head>
+<body>
+
+<div nt-class="org-neetjs-demo-hello">
+<div nt-body>
+    <p>Before</p>
+    <p nt-eval="console.log('debug');" nt-remove>Removed</p>
+    <p>After</p>
+</div>
+</div>
+
+</body>
+</html>
